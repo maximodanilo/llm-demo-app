@@ -36,6 +36,10 @@ void main() {
       expect(index1, 4); // After the 4 special tokens
       expect(index2, 5);
       expect(vocabulary.getSize(), 6);
+      
+      // Verify tokens were added to both maps
+      expect(vocabulary.getVocabularyMap()['hello'], 4);
+      expect(vocabulary.getReverseVocabularyMap()[4], 'hello');
     });
 
     test('should return existing index when adding duplicate token', () {
@@ -44,6 +48,11 @@ void main() {
       
       expect(index1, index2);
       expect(vocabulary.getSize(), 5); // 4 special tokens + 1 new token
+      
+      // Add multiple duplicates and verify size doesn't change
+      vocabulary.addToken('duplicate');
+      vocabulary.addToken('duplicate');
+      expect(vocabulary.getSize(), 5);
     });
 
     test('should retrieve correct token index', () {
@@ -51,10 +60,30 @@ void main() {
       
       expect(vocabulary.getTokenIndex('test'), 4);
       expect(vocabulary.getTokenIndex('[UNK]'), 0);
+      
+      // Add more tokens and verify indices
+      vocabulary.addToken('another');
+      vocabulary.addToken('more');
+      expect(vocabulary.getTokenIndex('another'), 5);
+      expect(vocabulary.getTokenIndex('more'), 6);
     });
 
     test('should return UNK token index for unknown tokens', () {
       expect(vocabulary.getTokenIndex('unknown'), 0); // UNK token index
+      expect(vocabulary.getTokenIndex('nonexistent'), 0);
+      expect(vocabulary.getTokenIndex(''), 0);
+    });
+    
+    test('should handle edge cases in addToken', () {
+      // Adding empty string
+      final emptyIndex = vocabulary.addToken('');
+      expect(emptyIndex, 4);
+      expect(vocabulary.getTokenIndex(''), 4);
+      
+      // Adding special characters
+      final specialIndex = vocabulary.addToken('!@#\$%^');
+      expect(specialIndex, 5);
+      expect(vocabulary.getTokenIndex('!@#\$%^'), 5);
     });
 
     test('should retrieve correct word from index', () {

@@ -56,10 +56,12 @@ class Vocabulary implements IVocabulary {
   
   @override
   int addToken(String token) {
+    // If token already exists, return its index
     if (_tokenToIndex.containsKey(token)) {
       return _tokenToIndex[token]!;
     }
     
+    // Assign a new unique index to the token
     final index = _tokenToIndex.isEmpty ? 0 : _tokenToIndex.length;
     _tokenToIndex[token] = index;
     _indexToToken[index] = token;
@@ -69,7 +71,10 @@ class Vocabulary implements IVocabulary {
   
   @override
   int getTokenIndex(String token) {
-    return _tokenToIndex[token] ?? _tokenToIndex[unkToken]!;
+    // Return the index if token exists, otherwise return UNK token index
+    return _tokenToIndex.containsKey(token) 
+        ? _tokenToIndex[token]! 
+        : _tokenToIndex[unkToken]!;
   }
   
   @override
