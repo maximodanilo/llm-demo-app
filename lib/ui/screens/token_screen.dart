@@ -22,6 +22,7 @@ class _TokenScreenState extends State<TokenScreen> {
   TokenizerType _selectedTokenizerType = TokenizerType.word;
   List<String> _tokens = [];
   List<int> _tokenIds = [];
+  List<String> _sentenceHistory = [];
   
   @override
   void dispose() {
@@ -30,6 +31,12 @@ class _TokenScreenState extends State<TokenScreen> {
   }
   
   void _tokenizeText() {
+    // If we have sentences in history, process all of them together with current text
+    if (_sentenceHistory.isNotEmpty) {
+      _processAllSentences();
+      return;
+    }
+    
     final text = _textController.text;
     if (text.isEmpty) {
       setState(() {
@@ -49,6 +56,85 @@ class _TokenScreenState extends State<TokenScreen> {
     setState(() {
       _tokens = tokens;
       _tokenIds = tokenIds;
+    });
+  }
+  
+  void _addCurrentTextToHistory() {
+    final text = _textController.text;
+    if (text.isEmpty) return;
+    
+    // Add the current text to the sentence history
+    setState(() {
+      if (!_sentenceHistory.contains(text)) {
+        _sentenceHistory.add(text);
+      }
+    });
+    
+    // Clear the text field for the next sentence
+    _textController.clear();
+    
+    // Process all sentences automatically
+    _processAllSentences();
+    
+    // Show a confirmation snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Sentence added to history'),
+        duration: const Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              _sentenceHistory.removeLast();
+              _processAllSentences(); // Process again after removing
+            });
+          },
+        ),
+      ),
+    );
+  }
+  
+  void _processAllSentences() {
+    if (_sentenceHistory.isEmpty) {
+      // If no sentences in history, just process the current text
+      _tokenizeText();
+      return;
+    }
+    
+    final tokenizer = _selectedTokenizerType == TokenizerType.word 
+        ? _wordTokenizer 
+        : _subwordTokenizer;
+    
+    // Process all sentences in history plus current text if not empty
+    final allSentences = List<String>.from(_sentenceHistory);
+    if (_textController.text.isNotEmpty && !allSentences.contains(_textController.text)) {
+      allSentences.add(_textController.text);
+    }
+    
+    // Combine all tokens from all sentences
+    final List<String> allTokens = [];
+    
+    for (final sentence in allSentences) {
+      final tokens = tokenizer.encode(sentence);
+      allTokens.addAll(tokens);
+    }
+    
+    // Get unique tokens (vocabulary building)
+    final uniqueTokens = allTokens.toSet().toList();
+    final tokenIds = tokenizer.tokensToIds(uniqueTokens);
+    
+    setState(() {
+      _tokens = uniqueTokens;
+      _tokenIds = tokenIds;
+    });
+  }
+  
+  void _clearHistory() {
+    setState(() {
+      _sentenceHistory = [];
+      _tokens = [];
+      _tokenIds = [];
+      _textController.clear();
     });
   }
   
@@ -72,6 +158,12 @@ class _TokenScreenState extends State<TokenScreen> {
             _buildTokenizerTypeSelector(),
             const SizedBox(height: 16),
             _buildTextInput(),
+            const SizedBox(height: 8),
+            _buildTextInputActions(),
+            if (_sentenceHistory.isNotEmpty) ...[  
+              const SizedBox(height: 16),
+              _buildSentenceHistory(),
+            ],
             const SizedBox(height: 16),
             _buildTokensDisplay(),
             const SizedBox(height: 16),
@@ -106,6 +198,8 @@ class _TokenScreenState extends State<TokenScreen> {
               _selectedTokenizerType = selection.first;
               if (_textController.text.isNotEmpty) {
                 _tokenizeText();
+              } else if (_sentenceHistory.isNotEmpty) {
+                _processAllSentences();
               }
             });
           },
@@ -124,15 +218,94 @@ class _TokenScreenState extends State<TokenScreen> {
           icon: const Icon(Icons.clear),
           onPressed: () {
             _textController.clear();
-            setState(() {
-              _tokens = [];
-              _tokenIds = [];
-            });
+            if (_sentenceHistory.isEmpty) {
+              setState(() {
+                _tokens = [];
+                _tokenIds = [];
+              });
+            }
           },
         ),
       ),
       maxLines: 3,
       onChanged: (_) => _tokenizeText(),
+    );
+  }
+  
+  Widget _buildTextInputActions() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        TextButton.icon(
+          onPressed: _addCurrentTextToHistory,
+          icon: const Icon(Icons.add),
+          label: const Text('Add to History'),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildSentenceHistory() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Sentence History (${_sentenceHistory.length}):',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            TextButton.icon(
+              onPressed: _clearHistory,
+              icon: const Icon(Icons.delete_outline, size: 18),
+              label: const Text('Clear'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 100,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: ListView.builder(
+            itemCount: _sentenceHistory.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                dense: true,
+                title: Text(
+                  _sentenceHistory[index],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, size: 18),
+                  onPressed: () {
+                    setState(() {
+                      _sentenceHistory.removeAt(index);
+                      if (_sentenceHistory.isEmpty && _textController.text.isEmpty) {
+                        _tokens = [];
+                        _tokenIds = [];
+                      } else {
+                        _processAllSentences();
+                      }
+                    });
+                  },
+                ),
+                onTap: () {
+                  _textController.text = _sentenceHistory[index];
+                  _tokenizeText();
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
   
@@ -266,6 +439,19 @@ class _TokenScreenState extends State<TokenScreen> {
               ),
               Text(
                 '• Better handles rare words and morphology',
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Multiple Sentences:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '• Add sentences to build a more comprehensive vocabulary',
+                style: TextStyle(fontSize: 14),
+              ),
+              Text(
+                '• Automatically combines tokens from all sentences in history',
                 style: TextStyle(fontSize: 14),
               ),
             ],
