@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:llmdemoapp/core/models/tokenizer.dart';
 import 'package:llmdemoapp/core/models/vocabulary.dart';
+import 'package:llmdemoapp/ui/screens/embedding_screen.dart';
 
 class VocabularyScreen extends StatefulWidget {
   final ITokenizer tokenizer;
@@ -200,7 +201,33 @@ class _VocabularyScreenState extends State<VocabularyScreen> {
                 },
               ),
             ),
+            const SizedBox(height: 16),
+            _buildNextStepButton(),
           ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildNextStepButton() {
+    return Center(
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EmbeddingScreen(
+                tokenizer: widget.tokenizer,
+                tokens: widget.tokens,
+                tokenIds: widget.tokenIds,
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.arrow_forward),
+        label: const Text('Next Step: Embedding Layer'),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
       ),
     );
@@ -231,6 +258,11 @@ class _VocabularyScreenState extends State<VocabularyScreen> {
               Text(
                 'In a language model, each token is represented by its ID, '
                 'which is used to look up the corresponding embedding vector.',
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Click "Next Step: Embedding Layer" to see how tokens are converted '
+                'into numerical vectors that the model can process.',
               ),
             ],
           ),
