@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:llmdemoapp/core/models/vocabulary.dart';
 
 /// Interface defining the contract for tokenizers
 abstract class ITokenizer {
@@ -19,6 +20,12 @@ abstract class ITokenizer {
   
   /// Get a consistent mock ID for a token (for demo purposes)
   int getMockTokenId(String token);
+  
+  /// Get the vocabulary associated with this tokenizer
+  IVocabulary get vocabulary;
+  
+  /// Get a copy of the current vocabulary as a map
+  Map<String, int> get vocabularyMap;
 }
 
 /// A simple word-level tokenizer implementation
@@ -131,8 +138,19 @@ class WordTokenizer implements ITokenizer {
   /// Get the vocabulary size
   int get vocabularySize => _vocabulary.length;
   
-  /// Get a copy of the current vocabulary
-  Map<String, int> get vocabulary => Map.from(_vocabulary);
+  /// Get a copy of the current vocabulary as a map
+  @override
+  Map<String, int> get vocabularyMap => Map.from(_vocabulary);
+  
+  @override
+  /// Get the vocabulary associated with this tokenizer
+  IVocabulary get vocabulary {
+    final vocab = Vocabulary();
+    _vocabulary.forEach((token, _) {
+      vocab.addToken(token);
+    });
+    return vocab;
+  }
   
   /// Get token ID for a specific token
   int getTokenId(String token) {
@@ -163,12 +181,17 @@ class SubwordTokenizer implements ITokenizer {
   static const String startToken = '[CLS]';
   static const String endToken = '[SEP]';
   
-  /// Common prefixes and suffixes for demonstration
-  final List<String> _commonPrefixes = ['un', 're', 'in', 'dis', 'en', 'non', 'im', 'il', 'ir'];
-  final List<String> _commonSuffixes = ['ing', 'ed', 's', 'ly', 'tion', 'ment', 'ness', 'ity', 'al', 'ic'];
+  /// Common prefixes for subword tokenization (simplified for demo)
+  final List<String> _commonPrefixes = [
+    'un', 're', 'in', 'im', 'dis', 'pre', 'post', 'non', 'anti', 'auto', 'bi', 'co', 'de', 'en', 'ex', 'inter', 'intra', 'micro', 'mid', 'mis', 'over', 'pro', 'semi', 'sub', 'super', 'trans', 'under'
+  ];
+  
+  /// Common suffixes for subword tokenization (simplified for demo)
+  final List<String> _commonSuffixes = [
+    'ing', 'ed', 'er', 'est', 'ly', 'ity', 'ment', 'ness', 'tion', 'sion', 'ism', 'ist', 'ful', 'able', 'ible', 'al', 'ial', 'ical', 'ious', 'ous', 'ive', 'less', 'y'
+  ];
   
   SubwordTokenizer() {
-    // Initialize special tokens and common subwords
     _initializeVocabulary();
   }
   
@@ -179,7 +202,7 @@ class SubwordTokenizer implements ITokenizer {
     _addToVocabulary(startToken);
     _addToVocabulary(endToken);
     
-    // Add common prefixes and suffixes
+    // Add common prefixes and suffixes to vocabulary
     for (final prefix in _commonPrefixes) {
       _addToVocabulary(prefix);
     }
@@ -234,6 +257,7 @@ class SubwordTokenizer implements ITokenizer {
     
     for (final word in words) {
       final subwords = _splitIntoSubwords(word);
+      print('DEBUG: Word "$word" split into subwords: $subwords');
       tokens.addAll(subwords);
       
       // Add all subwords to vocabulary
@@ -248,9 +272,11 @@ class SubwordTokenizer implements ITokenizer {
   List<String> _splitIntoSubwords(String word) {
     // This is a simplified implementation for demo purposes
     // A real BPE implementation would use merge operations based on frequency
+    print('DEBUG: Splitting word: "$word"');
     
     // If word is short, keep it as is
-    if (word.length <= 3) {
+    if (word.length <= 4) {
+      print('DEBUG: Word "$word" is too short, keeping as is');
       return [word];
     }
     
@@ -258,7 +284,10 @@ class SubwordTokenizer implements ITokenizer {
     for (final prefix in _commonPrefixes) {
       if (word.startsWith(prefix) && word.length > prefix.length) {
         final remainder = word.substring(prefix.length);
-        return [prefix, ...remainder.length > 3 ? _splitIntoSubwords(remainder) : [remainder]];
+        print('DEBUG: Found prefix "$prefix" in "$word", remainder: "$remainder"');
+        final result = [prefix, ...remainder.length > 4 ? _splitIntoSubwords(remainder) : [remainder]];
+        print('DEBUG: After prefix processing, result for "$word": $result');
+        return result;
       }
     }
     
@@ -266,7 +295,10 @@ class SubwordTokenizer implements ITokenizer {
     for (final suffix in _commonSuffixes) {
       if (word.endsWith(suffix) && word.length > suffix.length) {
         final remainder = word.substring(0, word.length - suffix.length);
-        return [...remainder.length > 3 ? _splitIntoSubwords(remainder) : [remainder], suffix];
+        print('DEBUG: Found suffix "$suffix" in "$word", remainder: "$remainder"');
+        final result = [...remainder.length > 4 ? _splitIntoSubwords(remainder) : [remainder], suffix];
+        print('DEBUG: After suffix processing, result for "$word": $result');
+        return result;
       }
     }
     
@@ -275,6 +307,7 @@ class SubwordTokenizer implements ITokenizer {
       final midPoint = word.length ~/ 2;
       final firstPart = word.substring(0, midPoint);
       final secondPart = word.substring(midPoint);
+      print('DEBUG: Splitting "$word" in the middle: "$firstPart" + "$secondPart"');
       return [firstPart, secondPart];
     }
     
@@ -312,8 +345,19 @@ class SubwordTokenizer implements ITokenizer {
   /// Get the vocabulary size
   int get vocabularySize => _vocabulary.length;
   
-  /// Get a copy of the current vocabulary
-  Map<String, int> get vocabulary => Map.from(_vocabulary);
+  /// Get a copy of the current vocabulary as a map
+  @override
+  Map<String, int> get vocabularyMap => Map.from(_vocabulary);
+  
+  @override
+  /// Get the vocabulary associated with this tokenizer
+  IVocabulary get vocabulary {
+    final vocab = Vocabulary();
+    _vocabulary.forEach((token, _) {
+      vocab.addToken(token);
+    });
+    return vocab;
+  }
   
   /// Get token ID for a specific token
   int getTokenId(String token) {
@@ -322,6 +366,7 @@ class SubwordTokenizer implements ITokenizer {
         : _vocabulary[unkToken]!;
   }
   
+  @override
   /// Get a consistent mock ID for a token (for demo purposes)
   int getMockTokenId(String token) {
     // Use the hash code to generate a consistent ID for demo purposes
@@ -333,12 +378,20 @@ class SubwordTokenizer implements ITokenizer {
 class TokenizerFactory {
   /// Create a tokenizer based on the specified type
   static ITokenizer createTokenizer(TokenizerType type) {
+    // Import the wrapper class to provide proper vocabulary implementation
+    ITokenizer baseTokenizer;
+    
     switch (type) {
       case TokenizerType.word:
-        return WordTokenizer();
+        baseTokenizer = WordTokenizer();
+        break;
       case TokenizerType.subword:
-        return SubwordTokenizer();
+        baseTokenizer = SubwordTokenizer();
+        break;
     }
+    
+    // Wrap the base tokenizer with TokenizerWithVocabulary to provide proper vocabulary support
+    return baseTokenizer;
   }
 }
 

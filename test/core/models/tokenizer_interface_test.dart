@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:llmdemoapp/core/models/tokenizer.dart';
+import 'package:llmdemoapp/core/models/vocabulary.dart';
 
 /// Test implementation of ITokenizer for testing interface compliance
 class MockTokenizer implements ITokenizer {
@@ -35,6 +36,18 @@ class MockTokenizer implements ITokenizer {
   int getMockTokenId(String token) {
     return token.hashCode % 1000;
   }
+  
+  @override
+  IVocabulary get vocabulary {
+    final vocab = Vocabulary();
+    _vocabulary.forEach((token, _) {
+      vocab.addToken(token);
+    });
+    return vocab;
+  }
+  
+  @override
+  Map<String, int> get vocabularyMap => Map.unmodifiable(_vocabulary);
 }
 
 void main() {
