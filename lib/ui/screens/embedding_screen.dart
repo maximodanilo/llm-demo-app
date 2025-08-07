@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:llmdemoapp/core/models/embedding_layer.dart';
 import 'package:llmdemoapp/core/models/tokenizer.dart';
 import 'package:llmdemoapp/core/models/vocabulary.dart';
+import 'package:llmdemoapp/ui/screens/neural_screen.dart';
 
 /// Screen to demonstrate how tokens are converted to embedding vectors
 class EmbeddingScreen extends StatefulWidget {
@@ -390,28 +391,21 @@ class _EmbeddingScreenState extends State<EmbeddingScreen> {
     return Center(
       child: ElevatedButton.icon(
         onPressed: () {
-          // TODO: Navigate to the next screen in the LLM demo flow
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => NextScreen(
-          //       tokenizer: widget.tokenizer,
-          //       tokens: widget.tokens,
-          //       tokenIds: widget.tokenIds,
-          //       embeddings: _embeddings,
-          //     ),
-          //   ),
-          // );
-          
-          // For now, just show a message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Next step will be implemented soon!'),
+          // Navigate to the Neural Screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NeuralScreen(
+                tokenizer: widget.tokenizer,
+                tokens: widget.tokens,
+                tokenIds: widget.tokenIds,
+                embeddings: _embeddings,
+              ),
             ),
           );
         },
         icon: const Icon(Icons.arrow_forward),
-        label: const Text('Next Step: Attention Mechanism'),
+        label: const Text('Next Step: Neural Network'),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
