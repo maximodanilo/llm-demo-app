@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:llmdemoapp/core/services/training_step_service.dart';
 import 'package:llmdemoapp/ui/steps/enter_text_step_section_impl.dart';
+import 'package:llmdemoapp/ui/steps/token_to_id_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/tokenization_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
 
@@ -93,6 +94,16 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
       case 1:
         final previousStepInput = _stepService.getStepInput(0) ?? '';
         return TokenizationStepSectionImpl(
+          key: ValueKey(widget.stepIndex),
+          title: stepInfo['title'],
+          description: stepInfo['description'],
+          isEditable: !isCompleted,
+          isCompleted: isCompleted,
+          inputText: previousStepInput,
+        );
+      case 2:
+        final previousStepInput = _stepService.getStepInput(0) ?? '';
+        return TokenToIdStepSectionImpl(
           key: ValueKey(widget.stepIndex),
           title: stepInfo['title'],
           description: stepInfo['description'],

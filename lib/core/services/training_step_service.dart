@@ -27,6 +27,13 @@ class TrainingStepService extends ChangeNotifier {
       'icon': Icons.splitscreen,
       'color': Colors.green,
     },
+    {
+      'id': 2,
+      'title': 'Token to ID Mapping',
+      'description': 'Learn how tokens are converted to numerical IDs',
+      'icon': Icons.numbers,
+      'color': Colors.orange,
+    },
   ];
   
   // Track completed steps
