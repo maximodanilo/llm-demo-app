@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service to manage training step completion state
 class TrainingStepService extends ChangeNotifier {
@@ -9,7 +11,14 @@ class TrainingStepService extends ChangeNotifier {
     return _instance;
   }
   
-  TrainingStepService._internal();
+  TrainingStepService._internal() {
+    // Load saved progress when the service is initialized
+    _loadProgress();
+  }
+  
+  // Keys for shared preferences
+  static const String _completedStepsKey = 'completed_steps';
+  static const String _stepInputsKey = 'step_inputs';
   
   // Step information
   final List<Map<String, dynamic>> steps = [
@@ -69,6 +78,7 @@ class TrainingStepService extends ChangeNotifier {
   // Mark a step as completed
   void completeStep(int stepId) {
     _completedSteps.add(stepId);
+    _saveProgress();
     notifyListeners();
   }
   
@@ -76,13 +86,65 @@ class TrainingStepService extends ChangeNotifier {
   void resetProgress() {
     _completedSteps.clear();
     _stepInputs.clear();
+    _saveProgress();
     notifyListeners();
   }
 
   // Set input data for a step
   void setStepInput(int stepId, String input) {
     _stepInputs[stepId] = input;
+    _saveProgress();
     notifyListeners();
+  }
+  
+  // Save progress to persistent storage
+  Future<void> _saveProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Save completed steps as a JSON string of integers
+      final completedStepsList = _completedSteps.toList();
+      await prefs.setString(_completedStepsKey, jsonEncode(completedStepsList));
+      
+      // Save step inputs as a JSON string of key-value pairs
+      final stepInputsMap = {};
+      _stepInputs.forEach((key, value) {
+        stepInputsMap[key.toString()] = value;
+      });
+      await prefs.setString(_stepInputsKey, jsonEncode(stepInputsMap));
+    } catch (e) {
+      debugPrint('Error saving progress: $e');
+    }
+  }
+  
+  // Load progress from persistent storage
+  Future<void> _loadProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Load completed steps
+      final completedStepsJson = prefs.getString(_completedStepsKey);
+      if (completedStepsJson != null) {
+        final List<dynamic> completedStepsList = jsonDecode(completedStepsJson);
+        _completedSteps.clear();
+        _completedSteps.addAll(completedStepsList.map((step) => step as int));
+      }
+      
+      // Load step inputs
+      final stepInputsJson = prefs.getString(_stepInputsKey);
+      if (stepInputsJson != null) {
+        final Map<String, dynamic> stepInputsMap = jsonDecode(stepInputsJson);
+        _stepInputs.clear();
+        stepInputsMap.forEach((key, value) {
+          _stepInputs[int.parse(key)] = value as String;
+        });
+      }
+      
+      // Notify listeners that data has been loaded
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading progress: $e');
+    }
   }
 
   // Get input data for a step
