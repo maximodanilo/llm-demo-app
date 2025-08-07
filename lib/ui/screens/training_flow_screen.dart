@@ -41,7 +41,22 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
                       _stepService.setStepInput(widget.stepIndex, _stepService.getStepInput(widget.stepIndex) ?? '');
                     }
                     _stepService.completeStep(widget.stepIndex);
-                    Navigator.pop(context);
+                    
+                    // Navigate to the next step if available, otherwise go back to home
+                    final nextStepIndex = widget.stepIndex + 1;
+                    if (nextStepIndex < _stepService.steps.length) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TrainingFlowScreen(
+                            stepIndex: nextStepIndex,
+                          ),
+                        ),
+                      );
+                    } else {
+                      // If this was the last step, go back to home
+                      Navigator.pop(context);
+                    }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
