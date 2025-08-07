@@ -3,22 +3,32 @@ import 'training_step_section.dart';
 
 class EnterTextStepSectionImpl extends StatelessWidget
     implements TrainingStepSection {
+  @override
   final String title;
+  @override
   final String description;
+  @override
   final bool isEditable;
+  @override
   final bool isCompleted;
   final String initialValue;
   final ValueChanged<String> onTextSubmitted;
 
   const EnterTextStepSectionImpl({
-    Key? key,
+    super.key,
     required this.title,
     required this.description,
     required this.isEditable,
     required this.isCompleted,
     required this.initialValue,
     required this.onTextSubmitted,
-  }) : super(key: key);
+  });
+
+  @override
+  bool validate() {
+    // For the enter text step, validation means checking if text has been entered
+    return isCompleted && (initialValue.trim().isNotEmpty);
+  }
 
   @override
   Widget build(BuildContext context) {

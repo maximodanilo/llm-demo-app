@@ -257,7 +257,7 @@ class SubwordTokenizer implements ITokenizer {
     
     for (final word in words) {
       final subwords = _splitIntoSubwords(word);
-      print('DEBUG: Word "$word" split into subwords: $subwords');
+      // print('DEBUG: Word "$word" split into subwords: $subwords');
       tokens.addAll(subwords);
       
       // Add all subwords to vocabulary
@@ -272,11 +272,11 @@ class SubwordTokenizer implements ITokenizer {
   List<String> _splitIntoSubwords(String word) {
     // This is a simplified implementation for demo purposes
     // A real BPE implementation would use merge operations based on frequency
-    print('DEBUG: Splitting word: "$word"');
+    // print('DEBUG: Splitting word: "$word"');
     
     // If word is short, keep it as is
     if (word.length <= 4) {
-      print('DEBUG: Word "$word" is too short, keeping as is');
+      // print('DEBUG: Word "$word" is too short, keeping as is');
       return [word];
     }
     
@@ -284,9 +284,9 @@ class SubwordTokenizer implements ITokenizer {
     for (final prefix in _commonPrefixes) {
       if (word.startsWith(prefix) && word.length > prefix.length) {
         final remainder = word.substring(prefix.length);
-        print('DEBUG: Found prefix "$prefix" in "$word", remainder: "$remainder"');
+        // print('DEBUG: Found prefix "$prefix" in "$word", remainder: "$remainder"');
         final result = [prefix, ...remainder.length > 4 ? _splitIntoSubwords(remainder) : [remainder]];
-        print('DEBUG: After prefix processing, result for "$word": $result');
+        // print('DEBUG: After prefix processing, result for "$word": $result');
         return result;
       }
     }
@@ -295,9 +295,9 @@ class SubwordTokenizer implements ITokenizer {
     for (final suffix in _commonSuffixes) {
       if (word.endsWith(suffix) && word.length > suffix.length) {
         final remainder = word.substring(0, word.length - suffix.length);
-        print('DEBUG: Found suffix "$suffix" in "$word", remainder: "$remainder"');
+        // print('DEBUG: Found suffix "$suffix" in "$word", remainder: "$remainder"');
         final result = [...remainder.length > 4 ? _splitIntoSubwords(remainder) : [remainder], suffix];
-        print('DEBUG: After suffix processing, result for "$word": $result');
+        // print('DEBUG: After suffix processing, result for "$word": $result');
         return result;
       }
     }
@@ -307,7 +307,7 @@ class SubwordTokenizer implements ITokenizer {
       final midPoint = word.length ~/ 2;
       final firstPart = word.substring(0, midPoint);
       final secondPart = word.substring(midPoint);
-      print('DEBUG: Splitting "$word" in the middle: "$firstPart" + "$secondPart"');
+      // print('DEBUG: Splitting "$word" in the middle: "$firstPart" + "$secondPart"');
       return [firstPart, secondPart];
     }
     

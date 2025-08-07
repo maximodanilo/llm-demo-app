@@ -206,7 +206,6 @@ void main() {
       
       // Set known weights for testing
       for (int i = 0; i < layer.neurons.length; i++) {
-        final neuron = layer.neurons[i] as Neuron;
         // Use reflection or create a test-specific constructor to set weights
         // For simplicity, we'll just test with the initialized weights
       }

@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:vector_math/vector_math.dart';
 
 /// Interface for embedding layer implementations
 abstract class IEmbeddingLayer {
@@ -155,7 +154,6 @@ class EmbeddingLayer implements IEmbeddingLayer {
     }
     
     final List<MapEntry<int, double>> similarities = [];
-    final targetEmbedding = getEmbedding(tokenIndex);
     
     // Calculate similarity with all other tokens
     for (int i = 0; i < _vocabSize; i++) {

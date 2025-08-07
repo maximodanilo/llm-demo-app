@@ -152,7 +152,7 @@ void main() {
       );
 
       // One vector is non-zero
-      (customLayer as EmbeddingLayer).setEmbedding(0, [1.0, 1.0]);
+      customLayer.setEmbedding(0, [1.0, 1.0]);
 
       // Similarity with zero vector should be 0
       expect(customLayer.getSimilarity(0, 1), 0.0);
@@ -170,7 +170,7 @@ void main() {
       );
 
       // Set known embeddings
-      (customLayer as EmbeddingLayer).setEmbedding(0, [1.0, 0.0]);
+      customLayer.setEmbedding(0, [1.0, 0.0]);
       (customLayer).setEmbedding(1, [0.9, 0.1]); // Close to 0
       (customLayer).setEmbedding(2, [0.1, 0.9]); // Far from 0
       (customLayer).setEmbedding(3, [0.5, 0.5]); // In between
@@ -234,7 +234,7 @@ void main() {
       );
 
       // Set known embeddings
-      (customLayer as EmbeddingLayer).setEmbedding(0, [
+      customLayer.setEmbedding(0, [
         3.0,
         4.0,
         0.0,
@@ -278,7 +278,7 @@ void main() {
       );
 
       // One vector is non-zero
-      (customLayer as EmbeddingLayer).setEmbedding(0, [3.0, 4.0]);
+      customLayer.setEmbedding(0, [3.0, 4.0]);
 
       // Normalize
       customLayer.normalizeEmbeddings();
@@ -300,7 +300,7 @@ void main() {
       );
 
       // Set custom embeddings
-      (customLayer as EmbeddingLayer).setEmbedding(0, [1.0, 2.0]);
+      customLayer.setEmbedding(0, [1.0, 2.0]);
       (customLayer).setEmbedding(1, [3.0, 4.0]);
 
       // Get all embeddings
@@ -325,7 +325,7 @@ void main() {
       );
 
       expect(
-        () => (customLayer as EmbeddingLayer).setEmbedding(0, [1.0, 2.0, 3.0]),
+        () => customLayer.setEmbedding(0, [1.0, 2.0, 3.0]),
         throwsArgumentError,
       );
     });
