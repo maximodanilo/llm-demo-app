@@ -56,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
+        alignment: 0.5, // Center the item in the viewport
       );
     }
   }
@@ -95,24 +96,29 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             
             // Steps as a scrollable feed
-            ...List.generate(_stepService.steps.length, (index) {
-              final step = _stepService.steps[index];
-              final isUnlocked = _stepService.isStepUnlocked(index);
-              final isCompleted = _stepService.isStepCompleted(index);
-
-              return Container(
-                key: _stepKeys[index],
-                child: _buildStepCard(
-                  title: step['title'],
-                description: step['description'],
-                icon: step['icon'],
-                color: step['color'],
-                isUnlocked: isUnlocked,
-                isCompleted: isCompleted,
-                  stepIndex: index,
-                ),
-              );
-            }),
+            Center(
+              child: Column(
+                children: List.generate(_stepService.steps.length, (index) {
+                  final step = _stepService.steps[index];
+                  final isUnlocked = _stepService.isStepUnlocked(index);
+                  final isCompleted = _stepService.isStepCompleted(index);
+            
+                  return Container(
+                    key: _stepKeys[index],
+                    constraints: const BoxConstraints(maxWidth: 500), // Set max width for cards
+                    child: _buildStepCard(
+                      title: step['title'],
+                      description: step['description'],
+                      icon: step['icon'],
+                      color: step['color'],
+                      isUnlocked: isUnlocked,
+                      isCompleted: isCompleted,
+                      stepIndex: index,
+                    ),
+                  );
+                }),
+              ),
+            ),
           ],
         ),
       ),
@@ -132,9 +138,10 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.only(bottom: 24),
       child: Card(
         elevation: 4,
-        clipBehavior: Clip.antiAlias,
+        clipBehavior: Clip.none, // Allow the number to overflow
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Stack(
+          clipBehavior: Clip.none, // Allow the number to overflow
           children: [
             InkWell(
               onTap: isUnlocked

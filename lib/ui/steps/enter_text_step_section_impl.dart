@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:llmdemoapp/core/services/training_step_service.dart';
 import 'training_step_section.dart';
 
-class EnterTextStepSectionImpl extends StatelessWidget
+class EnterTextStepSectionImpl extends StatefulWidget
     implements TrainingStepSection {
   @override
   final String title;
@@ -12,7 +13,7 @@ class EnterTextStepSectionImpl extends StatelessWidget
   @override
   final bool isCompleted;
   final String initialValue;
-  final ValueChanged<String> onTextSubmitted;
+
 
   const EnterTextStepSectionImpl({
     super.key,
@@ -21,35 +22,76 @@ class EnterTextStepSectionImpl extends StatelessWidget
     required this.isEditable,
     required this.isCompleted,
     required this.initialValue,
-    required this.onTextSubmitted,
+
   });
 
   @override
+  @override
   bool validate() {
-    // For the enter text step, validation means checking if text has been entered
-    return isCompleted && (initialValue.trim().isNotEmpty);
+    final service = TrainingStepService();
+    // The step ID is assumed to be 0 for this specific widget.
+    // A more robust solution would pass the stepId in.
+    final text = service.getStepInput(0);
+    return text != null && text.trim().isNotEmpty;
+  }
+
+  @override
+  State<EnterTextStepSectionImpl> createState() =>
+      _EnterTextStepSectionImplState();
+}
+
+class _EnterTextStepSectionImplState extends State<EnterTextStepSectionImpl> {
+  late final TextEditingController _controller;
+  final TrainingStepService _stepService = TrainingStepService();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+    _controller.addListener(() {
+      // Save directly to the service, no need to call back to parent
+      // The step ID is assumed to be 0 for this specific widget.
+      _stepService.setStepInput(0, _controller.text);
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant EnterTextStepSectionImpl oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only update the controller's text if the initialValue has actually changed.
+    // This prevents the cursor from jumping to the end on every keystroke.
+    if (widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != _controller.text) {
+      _controller.text = widget.initialValue;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = TextEditingController(text: initialValue);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: Theme.of(context).textTheme.headlineMedium),
+        Text(widget.title, style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 8),
-        Text(description),
+        Text(widget.description),
         const SizedBox(height: 16),
         TextField(
-          controller: controller,
-          enabled: isEditable,
+          controller: _controller,
+          enabled: widget.isEditable,
           decoration: const InputDecoration(
             labelText: 'Enter your training text',
             border: OutlineInputBorder(),
           ),
-          onSubmitted: isEditable ? onTextSubmitted : null,
+          // The controller's listener handles saving the text to the service.
+          onChanged: null,
         ),
-        if (!isEditable && isCompleted)
+        if (!widget.isEditable && widget.isCompleted)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
             child: Text(

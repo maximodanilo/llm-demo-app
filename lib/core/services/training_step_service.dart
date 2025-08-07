@@ -27,52 +27,13 @@ class TrainingStepService extends ChangeNotifier {
       'icon': Icons.splitscreen,
       'color': Colors.green,
     },
-    {
-      'id': 2,
-      'title': 'Token to ID Mapping',
-      'description': 'Tokens mapped to vocabulary indices',
-      'icon': Icons.numbers,
-      'color': Colors.orange,
-    },
-    {
-      'id': 3,
-      'title': 'Embedding Lookup',
-      'description': 'Token IDs mapped to embedding vectors',
-      'icon': Icons.view_module,
-      'color': Colors.purple,
-    },
-    {
-      'id': 4,
-      'title': 'Positional Encoding',
-      'description': 'Embeddings enhanced with positional information',
-      'icon': Icons.location_on,
-      'color': Colors.teal,
-    },
-    {
-      'id': 5,
-      'title': 'Attention Mechanism',
-      'description': 'Visualize how tokens attend to each other',
-      'icon': Icons.visibility,
-      'color': Colors.indigo,
-    },
-    {
-      'id': 6,
-      'title': 'Feedforward Processing',
-      'description': 'Embeddings processed through transformer layers',
-      'icon': Icons.layers,
-      'color': Colors.deepOrange,
-    },
-    {
-      'id': 7,
-      'title': 'Output Prediction',
-      'description': 'See model\'s output probabilities and predictions',
-      'icon': Icons.auto_awesome,
-      'color': Colors.pink,
-    },
   ];
   
   // Track completed steps
   final Set<int> _completedSteps = {}; // No steps are completed initially
+
+  // Track input data for each step
+  final Map<int, String> _stepInputs = {};
   
   // Get completed steps
   Set<int> get completedSteps => Set.unmodifiable(_completedSteps);
@@ -107,6 +68,18 @@ class TrainingStepService extends ChangeNotifier {
   // Reset all step progress
   void resetProgress() {
     _completedSteps.clear();
+    _stepInputs.clear();
     notifyListeners();
+  }
+
+  // Set input data for a step
+  void setStepInput(int stepId, String input) {
+    _stepInputs[stepId] = input;
+    notifyListeners();
+  }
+
+  // Get input data for a step
+  String? getStepInput(int stepId) {
+    return _stepInputs[stepId];
   }
 }

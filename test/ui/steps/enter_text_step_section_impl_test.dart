@@ -8,18 +8,17 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: EnterTextStepSectionImpl(
-            title: 'Enter Training Text',
-            description: 'Type your training sentence.',
+            title: 'Enter Text',
+            description: 'Type something',
             isEditable: true,
             isCompleted: false,
             initialValue: '',
-            onTextSubmitted: (_) {},
-          ),
+            ),
         ),
       ));
 
-      expect(find.text('Enter Training Text'), findsOneWidget);
-      expect(find.text('Type your training sentence.'), findsOneWidget);
+      expect(find.text('Enter Text'), findsOneWidget);
+      expect(find.text('Type something'), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
     });
 
@@ -28,12 +27,11 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: EnterTextStepSectionImpl(
-            title: 'Enter Training Text',
-            description: 'Type your training sentence.',
+            title: 'Enter Text',
+            description: 'Type something',
             isEditable: true,
             isCompleted: false,
             initialValue: '',
-            onTextSubmitted: (text) => submittedText = text,
           ),
         ),
       ));
@@ -47,13 +45,12 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: EnterTextStepSectionImpl(
-            title: 'Enter Training Text',
-            description: 'Type your training sentence.',
+            title: 'Enter Text',
+            description: 'Type something',
             isEditable: false,
             isCompleted: true,
-            initialValue: 'Locked input',
-            onTextSubmitted: (_) {},
-          ),
+            initialValue: 'some text',
+            ),
         ),
       ));
 
