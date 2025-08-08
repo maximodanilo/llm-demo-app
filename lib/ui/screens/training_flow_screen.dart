@@ -48,6 +48,21 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
       return;
     }
     
+    // For the last step, scroll all the way to the bottom to show the Return to Home button
+    if (currentStepIndex == _stepService.steps.length - 1) {
+      // Add a small delay to ensure the UI is fully rendered
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+      return;
+    }
+    
     if (_scrollController.hasClients) {
       // Get the global key for the current step
       final currentStepKey = _stepKeys[currentStepIndex];
@@ -300,26 +315,7 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
                       ),
                     ),
                   ),
-                // Add Home button for the last completed step
-                if (isUnlocked &&
-                    isCurrentStep &&
-                    isCompleted &&
-                    i == _stepService.steps.length - 1)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Return to home screen
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(Icons.home),
-                      label: const Text('Return to Home'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[200],
-                        foregroundColor: stepInfo['color'],
-                      ),
-                    ),
-                  ),
+                // Home button removed from here and added outside of step cards
               ],
             ),
           ),
@@ -344,7 +340,40 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: allSteps,
+            children: [
+              // All step cards
+              ...allSteps,
+              
+              // Add a larger Return to Home button at the bottom if the last step is completed
+              if (_stepService.isStepCompleted(_stepService.steps.length - 1))
+                Padding(
+                  padding: const EdgeInsets.only(top: 40.0, bottom: 20.0),
+                  child: Center(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        // Return to home screen
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.home, size: 28.0),
+                      label: const Text(
+                        'RETURN TO HOME',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),

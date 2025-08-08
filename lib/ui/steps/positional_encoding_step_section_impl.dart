@@ -230,39 +230,34 @@ class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingSt
           ),
         ),
         
-        // Step completion button
+        // Hidden completion trigger
         if (widget.isEditable && !widget.isCompleted)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Notify parent that step is complete using the TrainingStepService directly
-                  // This avoids the Navigator.pop(true) approach which might be causing issues
-                  final TrainingStepSection section = widget;
-                  if (section.validate()) {
-                    // Show a success message using ScaffoldMessenger
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Step completed successfully!'),
-                        backgroundColor: Colors.teal,
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-                    
-                    // Use a callback to notify the parent screen
-                    if (widget.onStepCompleted != null) {
-                      widget.onStepCompleted!();
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                ),
-                child: const Text('Continue to Next Step'),
-              ),
+          ElevatedButton(
+            onPressed: () {
+              // Notify parent that step is complete using the TrainingStepService directly
+              final TrainingStepSection section = widget;
+              if (section.validate()) {
+                // Show a success message using ScaffoldMessenger
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Step completed successfully!'),
+                    backgroundColor: Colors.teal,
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                
+                // Use a callback to notify the parent screen
+                if (widget.onStepCompleted != null) {
+                  widget.onStepCompleted!();
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
+            child: const SizedBox.shrink(),
           ),
       ],
     );
