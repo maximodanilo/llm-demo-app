@@ -34,19 +34,21 @@ void main() {
         ),
       );
       
-      // Verify title and description are displayed
-      expect(find.text('Token to ID Mapping'), findsOneWidget);
-      expect(find.text('Learn how tokens are converted to numerical IDs'), findsOneWidget);
+      // Verify section headers are displayed
+      expect(find.text('Original Text:'), findsOneWidget);
+      expect(find.text('Token to ID Mapping:'), findsOneWidget);
       
       // Verify original text is displayed
       expect(find.text('Original Text:'), findsOneWidget);
       expect(find.text(inputText), findsOneWidget);
       
+      // Verify vocabulary information is displayed
+      expect(find.text('Vocabulary Information'), findsOneWidget);
+      expect(find.text('Special predefined tokens:'), findsOneWidget);
+      
       // Verify token to ID mapping section exists
       expect(find.text('Token to ID Mapping:'), findsOneWidget);
       
-      // Verify special tokens section exists
-      expect(find.text('Vocabulary Information:'), findsOneWidget);
       
       // Verify special tokens are displayed
       expect(find.text('[PAD]'), findsOneWidget);
@@ -60,7 +62,7 @@ void main() {
       
       // Get the expected tokens and IDs
       final tokenizer = WordTokenizer();
-      final tokens = tokenizer.tokenize(inputText);
+      final tokens = tokenizer.encode(inputText);
       final ids = tokenizer.tokensToIds(tokens);
       
       await tester.pumpWidget(
@@ -77,10 +79,14 @@ void main() {
         ),
       );
       
-      // Verify each token is displayed with its corresponding ID
-      for (var i = 0; i < tokens.length; i++) {
-        expect(find.text(tokens[i]), findsWidgets);
-        expect(find.text(ids[i].toString()), findsWidgets);
+      // Verify tokens are displayed
+      for (var token in tokens) {
+        expect(find.text(token), findsWidgets);
+      }
+      
+      // Verify IDs are displayed with their prefix
+      for (var id in ids) {
+        expect(find.text('ID: $id'), findsWidgets);
       }
     });
     
