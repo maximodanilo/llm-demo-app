@@ -3,6 +3,7 @@ import 'package:llmdemoapp/core/models/embedding_layer.dart';
 import 'package:llmdemoapp/core/models/tokenizer.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
 import 'package:llmdemoapp/ui/widgets/collapsible_education_section.dart';
+import 'package:llmdemoapp/ui/widgets/embedding_wave_visualization.dart';
 
 /// Implementation of the Embedding Lookup step in the LLM training flow
 class EmbeddingLookupStepSectionImpl extends StatefulWidget
@@ -206,27 +207,6 @@ class _EmbeddingLookupStepSectionImplState
               );
             },
           ),
-
-          // Educational explanation
-          const SizedBox(height: 24),
-          Card(
-            elevation: 2,
-            color: Colors.purple.withValues(alpha: 0.15),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'What are Embeddings?',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -293,58 +273,45 @@ class _EmbeddingLookupStepSectionImplState
   }
 
   Widget _buildEmbeddingVisualization(List<double> embedding) {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children:
-            embedding.map((value) {
-              // Normalize value for visualization
-              final normalizedValue = ((value + 1) / 2).clamp(0.0, 1.0);
-
-              return Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.white,
-                        Colors.purple.withValues(alpha: normalizedValue),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        height: 40 * normalizedValue,
-                        decoration: BoxDecoration(
-                          color: Colors.purple.withValues(
-                            alpha: normalizedValue,
-                          ),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(4),
-                            topRight: Radius.circular(4),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        value.toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 8),
-                      ),
-                    ],
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Wave visualization
+        EmbeddingWaveVisualization(
+          embedding: embedding,
+          waveColor: Colors.purple,
+        ),
+        
+        // Collapsible section for raw embedding vector
+        const SizedBox(height: 8),
+        CollapsibleEducationSection(
+          title: 'Raw Embedding Vector',
+          themeColor: Colors.purple,
+          initiallyExpanded: false,
+          content: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'The raw numerical values of the embedding vector:',
+                  style: TextStyle(fontSize: 12),
                 ),
-              );
-            }).toList(),
-      ),
+                const SizedBox(height: 8),
+                Text(
+                  '[${embedding.map((e) => e.toStringAsFixed(3)).join(', ')}]',
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
