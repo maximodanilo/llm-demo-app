@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:llmdemoapp/core/models/embedding_layer.dart';
+import 'package:llmdemoapp/core/models/tokenizer.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
 import 'package:llmdemoapp/ui/widgets/collapsible_education_section.dart';
+import 'package:llmdemoapp/ui/widgets/positional_encoding_visualization.dart';
 
 /// Widget that demonstrates how positional encoding is added to embeddings
-class PositionalEncodingStepSectionImpl extends StatelessWidget
+class PositionalEncodingStepSectionImpl extends StatefulWidget
     implements TrainingStepSection {
   @override
   final String title;
@@ -23,41 +26,89 @@ class PositionalEncodingStepSectionImpl extends StatelessWidget
     required this.isCompleted,
     required this.inputText,
   });
-
+  
+  @override
+  State<PositionalEncodingStepSectionImpl> createState() => _PositionalEncodingStepSectionImplState();
+  
   @override
   bool validate() {
     // This step is valid by default as it's a display of a process
     return true;
   }
 
+}
+
+class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingStepSectionImpl> {
+  late EmbeddingLayer _embeddingLayer;
+  late ITokenizer _tokenizer;
+  late List<List<double>> _embeddings;
+  bool _isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeModels();
+  }
+  
+  void _initializeModels() {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    // Initialize tokenizer
+    _tokenizer = TokenizerFactory.createTokenizer(TokenizerType.word);
+    
+    // Initialize embedding layer
+    _embeddingLayer = EmbeddingLayer(seed: 42);
+    _embeddingLayer.initializeEmbeddings(10000, 32, strategy: EmbeddingInitStrategy.xavier);
+    
+    // Process the input text to get embeddings
+    if (widget.inputText.isNotEmpty) {
+      final tokens = _tokenizer.encode(widget.inputText);
+      final tokenIds = _tokenizer.tokensToIds(tokens);
+      
+      // Get embeddings for each token (limit to first 5 tokens for clarity)
+      final limitedTokenIds = tokenIds.length > 5 ? tokenIds.sublist(0, 5) : tokenIds;
+      _embeddings = limitedTokenIds.map((id) => _embeddingLayer.getEmbedding(id)).toList();
+    } else {
+      // Default empty embeddings if no input text
+      _embeddings = [];
+    }
+    
+    setState(() {
+      _isLoading = false;
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+
         // Educational content about positional encoding
         CollapsibleEducationSection(
           title: 'What is Positional Encoding?',
           themeColor: Colors.teal,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
+            children: const [
+              Text(
                 'Positional encoding adds information about token position in the sequence to the embedding vectors. This is crucial because transformer models process all tokens in parallel and would otherwise lose sequence order information.',
                 style: TextStyle(fontSize: 14),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                 'Key concepts:',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Padding(
-                padding: const EdgeInsets.only(left: 16.0),
+                padding: EdgeInsets.only(left: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text('• Sine/Cosine Functions: Most models use sinusoidal functions at different frequencies'),
                     Text('• Unique Position Signatures: Each position gets a unique encoding pattern'),
                     Text('• Learned vs. Fixed: Some models learn position embeddings, others use fixed formulas'),
@@ -65,8 +116,8 @@ class PositionalEncodingStepSectionImpl extends StatelessWidget
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                 'Without positional encoding, the model would treat "The cat chased the mouse" and "The mouse chased the cat" as identical sequences since they contain the same tokens.',
                 style: TextStyle(fontSize: 14),
               ),
@@ -75,7 +126,7 @@ class PositionalEncodingStepSectionImpl extends StatelessWidget
         ),
         const SizedBox(height: 16),
         
-        // Placeholder for positional encoding visualization
+        // Positional encoding visualization
         Card(
           elevation: 2,
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -88,31 +139,41 @@ class PositionalEncodingStepSectionImpl extends StatelessWidget
                   'Positional Encoding Visualization',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 const Text(
-                  'This step would show a visualization of how positional encoding vectors are added to token embeddings.',
+                  'See how positional encoding vectors are added to token embeddings to preserve sequence information:',
                   style: TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 16),
-                // Placeholder for visualization
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.teal.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.teal.shade200),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Positional Encoding Visualization\n(To be implemented)',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.teal,
-                        fontWeight: FontWeight.bold,
+                
+                // Show loading indicator or visualization
+                _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : _embeddings.isEmpty
+                    ? Container(
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.teal.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.teal.shade200),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'No embeddings available.\nPlease enter some text in the first step.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.teal,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      )
+                    : PositionalEncodingVisualization(
+                        embeddings: _embeddings,
+                        themeColor: Colors.teal,
                       ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -160,6 +221,28 @@ class PositionalEncodingStepSectionImpl extends StatelessWidget
             ),
           ),
         ),
+        
+        // Step completion button
+        if (widget.isEditable && !widget.isCompleted)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // Notify parent that step is complete
+                  final TrainingStepSection section = widget;
+                  if (section.validate()) {
+                    Navigator.of(context).pop(true);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                ),
+                child: const Text('Continue to Next Step'),
+              ),
+            ),
+          ),
       ],
     );
   }
