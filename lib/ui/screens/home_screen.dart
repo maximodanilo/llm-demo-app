@@ -149,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TrainingFlowScreen(stepIndex: stepIndex),
+                          builder: (context) => TrainingFlowScreen(initialStepIndex: stepIndex),
                         ),
                       );
                     }

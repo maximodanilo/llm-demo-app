@@ -118,7 +118,7 @@ void main() {
         MaterialApp(
           home: const HomeScreen(),
           routes: {
-            '/training': (context) => const TrainingFlowScreen(stepIndex: 0),
+            '/training': (context) => const TrainingFlowScreen(initialStepIndex: 0),
           },
         ),
       );

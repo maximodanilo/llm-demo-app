@@ -43,6 +43,20 @@ class TrainingStepService extends ChangeNotifier {
       'icon': Icons.numbers,
       'color': Colors.orange,
     },
+    {
+      'id': 3,
+      'title': 'Embedding Lookup',
+      'description': 'See how token IDs are mapped to embedding vectors',
+      'icon': Icons.view_in_ar,
+      'color': Colors.purple,
+    },
+    {
+      'id': 4,
+      'title': 'Positional Encoding',
+      'description': 'Learn how position information is added to embeddings',
+      'icon': Icons.format_list_numbered,
+      'color': Colors.teal,
+    },
   ];
   
   // Track completed steps

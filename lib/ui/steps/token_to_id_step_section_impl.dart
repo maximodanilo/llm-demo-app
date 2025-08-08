@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:llmdemoapp/core/models/tokenizer.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
+import 'package:llmdemoapp/ui/widgets/collapsible_education_section.dart';
 
 /// Widget that demonstrates how tokens are converted to numerical IDs
 class TokenToIdStepSectionImpl extends StatelessWidget
@@ -46,24 +47,45 @@ class TokenToIdStepSectionImpl extends StatelessWidget
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Original Text:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
+        // Educational content about token to ID mapping
+        CollapsibleEducationSection(
+          title: 'Why Map Tokens to IDs?',
+          themeColor: Colors.orange,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Neural networks can only process numbers, not text. Token-to-ID mapping converts text tokens into numerical values that the model can work with.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Key concepts:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('• Vocabulary: A fixed collection of all tokens the model knows'),
+                    Text('• ID Assignment: Each token gets a unique integer ID'),
+                    Text('• One-to-One Mapping: Each token maps to exactly one ID'),
+                    Text('• Vocabulary Size: Determines how many unique tokens the model can recognize'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'This mapping creates a bridge between human-readable text and machine-processable numbers, enabling the neural network to learn patterns in language.',
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
           ),
-          child: Text(
-            inputText,
-            style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        
         const Text(
           'Token to ID Mapping:',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

@@ -91,14 +91,7 @@ class _EnterTextStepSectionImplState extends State<EnterTextStepSectionImpl> {
           // The controller's listener handles saving the text to the service.
           onChanged: null,
         ),
-        if (!widget.isEditable && widget.isCompleted)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: Text(
-              'Step completed',
-              style: TextStyle(color: Colors.green),
-            ),
-          ),
+
       ],
     );
   }

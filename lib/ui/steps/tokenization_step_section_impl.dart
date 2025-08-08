@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:llmdemoapp/core/models/tokenizer.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
+import 'package:llmdemoapp/ui/widgets/collapsible_education_section.dart';
 
 class TokenizationStepSectionImpl extends StatelessWidget
     implements TrainingStepSection {
@@ -38,24 +39,45 @@ class TokenizationStepSectionImpl extends StatelessWidget
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Original Text:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
+        // Educational content about tokenization
+        CollapsibleEducationSection(
+          title: 'What is Tokenization?',
+          themeColor: Colors.green,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Tokenization is the process of breaking text into smaller units called tokens. These tokens are the basic units that language models process.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Types of tokenization:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('• Word-based: Splits text by spaces and punctuation'),
+                    Text('• Character-based: Treats each character as a token'),
+                    Text('• Subword-based: Uses algorithms like BPE, WordPiece, or SentencePiece'),
+                    Text('• Byte-level: Works with raw bytes instead of Unicode characters'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Modern LLMs typically use subword tokenization, which balances vocabulary size and semantic meaning by breaking uncommon words into smaller subword units.',
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
           ),
-          child: Text(
-            inputText,
-            style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        
         const Text(
           'Tokens:',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
