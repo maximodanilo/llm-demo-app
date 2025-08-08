@@ -146,28 +146,7 @@ class TrainingStepService extends ChangeNotifier {
       // or might be mocked, so we need to handle that gracefully
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try {
-          final prefs = await SharedPreferences.getInstance();
-          
-          // Load completed steps
-          final completedStepsJson = prefs.getString(_completedStepsKey);
-          if (completedStepsJson != null) {
-            final List<dynamic> completedStepsList = jsonDecode(completedStepsJson);
-            _completedSteps.clear();
-            _completedSteps.addAll(completedStepsList.map((step) => step as int));
-          }
-          
-          // Load step inputs
-          final stepInputsJson = prefs.getString(_stepInputsKey);
-          if (stepInputsJson != null) {
-            final Map<String, dynamic> stepInputsMap = jsonDecode(stepInputsJson);
-            _stepInputs.clear();
-            stepInputsMap.forEach((key, value) {
-              _stepInputs[int.parse(key)] = value as String;
-            });
-          }
-          
-          // Notify listeners that data has been loaded
-          notifyListeners();
+          await _loadProgressInternal();
         } catch (e) {
           debugPrint('Error in post-frame loading progress: $e');
         }
@@ -176,6 +155,51 @@ class TrainingStepService extends ChangeNotifier {
       // This is a fallback in case the WidgetsBinding.instance is not available
       // (which can happen in tests)
       debugPrint('Error setting up progress load: $e');
+    }
+  }
+  
+  // Internal method to load progress from SharedPreferences
+  Future<void> _loadProgressInternal() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Load completed steps
+    final completedStepsJson = prefs.getString(_completedStepsKey);
+    if (completedStepsJson != null) {
+      try {
+        final List<dynamic> completedStepsList = jsonDecode(completedStepsJson);
+        _completedSteps.clear();
+        _completedSteps.addAll(completedStepsList.map((step) => step as int));
+      } catch (e) {
+        debugPrint('Error decoding completed steps: $e');
+      }
+    }
+    
+    // Load step inputs
+    final stepInputsJson = prefs.getString(_stepInputsKey);
+    if (stepInputsJson != null) {
+      try {
+        final Map<String, dynamic> stepInputsMap = jsonDecode(stepInputsJson);
+        _stepInputs.clear();
+        stepInputsMap.forEach((key, value) {
+          _stepInputs[int.parse(key)] = value as String;
+        });
+      } catch (e) {
+        debugPrint('Error decoding step inputs: $e');
+      }
+    }
+    
+    // Notify listeners that data has been loaded
+    notifyListeners();
+  }
+  
+  /// Test-only method to directly load progress without using post-frame callback
+  /// This should only be used in tests
+  @visibleForTesting
+  Future<void> testOnlyLoadProgress() async {
+    try {
+      await _loadProgressInternal();
+    } catch (e) {
+      debugPrint('Error in test-only load progress: $e');
     }
   }
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:llmdemoapp/core/services/training_step_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -174,6 +175,125 @@ void main() {
         
         service.completeStep(1);
         expect(service.isStepUnlocked(2), isTrue);
+      });
+    });
+    
+    // 4. Persistence and loading tests
+    group('Persistence and loading', () {
+      // Create a more direct test approach that doesn't rely on the post-frame callback
+      // Instead, we'll test the persistence and loading by using the service's methods directly
+      
+      test('setStepInput should save to SharedPreferences and be retrievable', () async {
+        // Setup: Clear any existing data
+        SharedPreferences.setMockInitialValues({});
+        final service = TrainingStepService();
+        
+        // Act: Set a step input
+        service.setStepInput(0, 'Test input for step 0');
+        
+        // Verify: The input can be retrieved from the service
+        expect(service.getStepInput(0), equals('Test input for step 0'));
+        
+        // Create a new service instance to verify persistence
+        final newService = TrainingStepService();
+        
+        // The new service should have the same data after loading from SharedPreferences
+        // We'll manually trigger the loading since we can't rely on the post-frame callback in tests
+        await newService.testOnlyLoadProgress();
+        
+        // Verify the data was loaded correctly
+        expect(newService.getStepInput(0), equals('Test input for step 0'));
+      });
+      
+      test('completeStep should save to SharedPreferences and be retrievable', () async {
+        // Setup: Clear any existing data
+        SharedPreferences.setMockInitialValues({});
+        final service = TrainingStepService();
+        
+        // Act: Complete a step
+        service.completeStep(0);
+        
+        // Verify: The step is marked as completed
+        expect(service.isStepCompleted(0), isTrue);
+        
+        // Create a new service instance to verify persistence
+        final newService = TrainingStepService();
+        
+        // Manually trigger loading
+        await newService.testOnlyLoadProgress();
+        
+        // Verify the completed step was loaded correctly
+        expect(newService.isStepCompleted(0), isTrue);
+      });
+      
+      test('resetProgress should clear data from SharedPreferences', () async {
+        // Setup: Initialize with some data
+        SharedPreferences.setMockInitialValues({});
+        final service = TrainingStepService();
+        
+        // Complete steps and set inputs
+        service.setStepInput(0, 'Test input');
+        service.completeStep(0);
+        service.completeStep(1);
+        
+        // Verify setup
+        expect(service.isStepCompleted(0), isTrue);
+        expect(service.isStepCompleted(1), isTrue);
+        expect(service.getStepInput(0), equals('Test input'));
+        
+        // Act: Reset progress
+        service.resetProgress();
+        
+        // Verify: Data is cleared from the service
+        expect(service.isStepCompleted(0), isFalse);
+        expect(service.isStepCompleted(1), isFalse);
+        expect(service.getStepInput(0), isNull);
+        
+        // Create a new service instance to verify persistence
+        final newService = TrainingStepService();
+        
+        // Manually trigger loading
+        await newService.testOnlyLoadProgress();
+        
+        // Verify the reset was persisted
+        expect(newService.isStepCompleted(0), isFalse);
+        expect(newService.isStepCompleted(1), isFalse);
+        expect(newService.getStepInput(0), isNull);
+      });
+      
+      test('if stepInputsJson is null, step inputs should remain empty', () async {
+        // Setup: Initialize SharedPreferences with only completed steps, no inputs
+        final List<dynamic> mockCompletedSteps = [0];
+        
+        SharedPreferences.setMockInitialValues({
+          'completed_steps': jsonEncode(mockCompletedSteps),
+          // No 'step_inputs' key
+        });
+        
+        // Create a service and manually load progress
+        final service = TrainingStepService();
+        await service.testOnlyLoadProgress();
+        
+        // Verify completed steps were loaded
+        expect(service.isStepCompleted(0), isTrue);
+        
+        // Verify step inputs are null (not loaded since they don't exist)
+        expect(service.getStepInput(0), isNull);
+        expect(service.getStepInput(1), isNull);
+      });
+      
+      test('service should handle malformed step inputs JSON', () async {
+        // Setup: Initialize SharedPreferences with invalid JSON for step inputs
+        SharedPreferences.setMockInitialValues({
+          'step_inputs': '{invalid json}', // Malformed JSON
+        });
+        
+        // Create a service and manually load progress
+        final service = TrainingStepService();
+        await service.testOnlyLoadProgress();
+        
+        // Service should not crash and step inputs should be empty
+        expect(service.getStepInput(0), isNull);
       });
     });
   });
