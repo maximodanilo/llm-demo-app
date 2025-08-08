@@ -25,7 +25,16 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
     final stepWidget = _buildStepWidget(stepInfo, isCompleted);
 
     return Scaffold(
-      appBar: AppBar(title: Text("LLM Training Flow - Step ${widget.stepIndex + 1}")),
+      appBar: AppBar(
+        title: Text("LLM Training Flow - Step ${widget.stepIndex + 1}"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reset this step and all subsequent steps',
+            onPressed: () => _showResetConfirmation(context),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -76,6 +85,48 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
           ],
         ),
       ),
+    );
+  }
+  
+  // Show a confirmation dialog before resetting progress
+  void _showResetConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Reset Progress'),
+          content: Text(
+            'This will reset your progress for step ${widget.stepIndex + 1} and all subsequent steps. '
+            'Your progress on previous steps will be preserved. Are you sure?'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Debug print before reset
+                debugPrint('Before reset - Completed steps: ${_stepService.completedSteps}');
+                debugPrint('Current step index: ${widget.stepIndex}');
+                
+                // Reset progress from current step onwards
+                _stepService.resetProgressFromStep(widget.stepIndex);
+                
+                // Debug print after reset
+                debugPrint('After reset - Completed steps: ${_stepService.completedSteps}');
+                
+                // Close the dialog
+                Navigator.of(dialogContext).pop();
+                
+                // Return to home screen
+                Navigator.of(context).pop();
+              },
+              child: const Text('RESET', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -89,6 +89,18 @@ class TrainingStepService extends ChangeNotifier {
     _saveProgress();
     notifyListeners();
   }
+  
+  // Reset progress from a specific step onwards
+  void resetProgressFromStep(int stepId) {
+    // Remove all completed steps with ID >= stepId (including the current step)
+    _completedSteps.removeWhere((id) => id >= stepId);
+    
+    // Remove all step inputs with ID >= stepId (including the current step)
+    _stepInputs.removeWhere((id, _) => id >= stepId);
+    
+    _saveProgress();
+    notifyListeners();
+  }
 
   // Set input data for a step
   void setStepInput(int stepId, String input) {
@@ -100,50 +112,70 @@ class TrainingStepService extends ChangeNotifier {
   // Save progress to persistent storage
   Future<void> _saveProgress() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Save completed steps as a JSON string of integers
-      final completedStepsList = _completedSteps.toList();
-      await prefs.setString(_completedStepsKey, jsonEncode(completedStepsList));
-      
-      // Save step inputs as a JSON string of key-value pairs
-      final stepInputsMap = {};
-      _stepInputs.forEach((key, value) {
-        stepInputsMap[key.toString()] = value;
+      // In test environment, SharedPreferences might not be available
+      // or might be mocked, so we need to handle that gracefully
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          
+          // Save completed steps as a JSON string of integers
+          final completedStepsList = _completedSteps.toList();
+          await prefs.setString(_completedStepsKey, jsonEncode(completedStepsList));
+          
+          // Save step inputs as a JSON string of key-value pairs
+          final stepInputsMap = {};
+          _stepInputs.forEach((key, value) {
+            stepInputsMap[key.toString()] = value;
+          });
+          await prefs.setString(_stepInputsKey, jsonEncode(stepInputsMap));
+        } catch (e) {
+          debugPrint('Error in post-frame saving progress: $e');
+        }
       });
-      await prefs.setString(_stepInputsKey, jsonEncode(stepInputsMap));
     } catch (e) {
-      debugPrint('Error saving progress: $e');
+      // This is a fallback in case the WidgetsBinding.instance is not available
+      // (which can happen in tests)
+      debugPrint('Error setting up progress save: $e');
     }
   }
   
   // Load progress from persistent storage
   Future<void> _loadProgress() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Load completed steps
-      final completedStepsJson = prefs.getString(_completedStepsKey);
-      if (completedStepsJson != null) {
-        final List<dynamic> completedStepsList = jsonDecode(completedStepsJson);
-        _completedSteps.clear();
-        _completedSteps.addAll(completedStepsList.map((step) => step as int));
-      }
-      
-      // Load step inputs
-      final stepInputsJson = prefs.getString(_stepInputsKey);
-      if (stepInputsJson != null) {
-        final Map<String, dynamic> stepInputsMap = jsonDecode(stepInputsJson);
-        _stepInputs.clear();
-        stepInputsMap.forEach((key, value) {
-          _stepInputs[int.parse(key)] = value as String;
-        });
-      }
-      
-      // Notify listeners that data has been loaded
-      notifyListeners();
+      // In test environment, SharedPreferences might not be available
+      // or might be mocked, so we need to handle that gracefully
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          
+          // Load completed steps
+          final completedStepsJson = prefs.getString(_completedStepsKey);
+          if (completedStepsJson != null) {
+            final List<dynamic> completedStepsList = jsonDecode(completedStepsJson);
+            _completedSteps.clear();
+            _completedSteps.addAll(completedStepsList.map((step) => step as int));
+          }
+          
+          // Load step inputs
+          final stepInputsJson = prefs.getString(_stepInputsKey);
+          if (stepInputsJson != null) {
+            final Map<String, dynamic> stepInputsMap = jsonDecode(stepInputsJson);
+            _stepInputs.clear();
+            stepInputsMap.forEach((key, value) {
+              _stepInputs[int.parse(key)] = value as String;
+            });
+          }
+          
+          // Notify listeners that data has been loaded
+          notifyListeners();
+        } catch (e) {
+          debugPrint('Error in post-frame loading progress: $e');
+        }
+      });
     } catch (e) {
-      debugPrint('Error loading progress: $e');
+      // This is a fallback in case the WidgetsBinding.instance is not available
+      // (which can happen in tests)
+      debugPrint('Error setting up progress load: $e');
     }
   }
 
