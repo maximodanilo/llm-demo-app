@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:llmdemoapp/core/services/training_step_service.dart';
+import 'package:llmdemoapp/ui/steps/attention_mechanism_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/embedding_lookup_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/enter_text_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/positional_encoding_step_section_impl.dart';
@@ -545,6 +546,36 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
       case 4:
         // Use the original text from the first step
         return PositionalEncodingStepSectionImpl(
+          key: valueKey,
+          title: stepInfo['title'],
+          description: stepInfo['description'],
+          isEditable: !isCompleted && stepIndex == currentStepIndex,
+          isCompleted: isCompleted,
+          inputText: originalText ?? '',
+          onStepCompleted: () {
+            // Complete the step and update the UI
+            _stepService.completeStep(stepIndex);
+
+            setState(() {
+              // Auto-scroll to the next step if not the last step
+              if (stepIndex < _stepService.steps.length - 1) {
+                // Automatically advance to the next step
+                currentStepIndex += 1;
+              }
+
+              // Schedule scrolling after the UI has been updated and rendered
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                // Add a small delay to ensure the UI is fully rendered
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  _scrollToCurrentStep();
+                });
+              });
+            });
+          },
+        );
+      case 5:
+        // Use the original text from the first step
+        return AttentionMechanismStepSectionImpl(
           key: valueKey,
           title: stepInfo['title'],
           description: stepInfo['description'],

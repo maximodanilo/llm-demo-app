@@ -57,6 +57,13 @@ class TrainingStepService extends ChangeNotifier {
       'icon': Icons.format_list_numbered,
       'color': Colors.teal,
     },
+    {
+      'id': 5,
+      'title': 'Attention Mechanism',
+      'description': 'Visualize how tokens attend to each other in the sequence',
+      'icon': Icons.visibility,
+      'color': Colors.deepOrange,
+    },
   ];
   
   // Track completed steps
