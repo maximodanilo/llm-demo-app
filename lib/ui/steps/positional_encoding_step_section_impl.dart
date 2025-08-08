@@ -17,6 +17,7 @@ class PositionalEncodingStepSectionImpl extends StatefulWidget
   @override
   final bool isCompleted;
   final String inputText;
+  final VoidCallback? onStepCompleted;
 
   const PositionalEncodingStepSectionImpl({
     super.key,
@@ -25,6 +26,7 @@ class PositionalEncodingStepSectionImpl extends StatefulWidget
     required this.isEditable,
     required this.isCompleted,
     required this.inputText,
+    this.onStepCompleted,
   });
   
   @override
@@ -42,6 +44,7 @@ class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingSt
   late EmbeddingLayer _embeddingLayer;
   late ITokenizer _tokenizer;
   late List<List<double>> _embeddings;
+  late List<String> _tokens;
   bool _isLoading = true;
   
   @override
@@ -67,12 +70,16 @@ class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingSt
       final tokens = _tokenizer.encode(widget.inputText);
       final tokenIds = _tokenizer.tokensToIds(tokens);
       
+      // Store tokens for display in the UI (limit to first 5 tokens for clarity)
+      _tokens = tokens.length > 5 ? tokens.sublist(0, 5) : tokens;
+      
       // Get embeddings for each token (limit to first 5 tokens for clarity)
       final limitedTokenIds = tokenIds.length > 5 ? tokenIds.sublist(0, 5) : tokenIds;
       _embeddings = limitedTokenIds.map((id) => _embeddingLayer.getEmbedding(id)).toList();
     } else {
       // Default empty embeddings if no input text
       _embeddings = [];
+      _tokens = [];
     }
     
     setState(() {
@@ -172,6 +179,7 @@ class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingSt
                       )
                     : PositionalEncodingVisualization(
                         embeddings: _embeddings,
+                        tokens: _tokens,
                         themeColor: Colors.teal,
                       ),
               ],
@@ -229,10 +237,23 @@ class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingSt
             child: Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Notify parent that step is complete
+                  // Notify parent that step is complete using the TrainingStepService directly
+                  // This avoids the Navigator.pop(true) approach which might be causing issues
                   final TrainingStepSection section = widget;
                   if (section.validate()) {
-                    Navigator.of(context).pop(true);
+                    // Show a success message using ScaffoldMessenger
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Step completed successfully!'),
+                        backgroundColor: Colors.teal,
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                    
+                    // Use a callback to notify the parent screen
+                    if (widget.onStepCompleted != null) {
+                      widget.onStepCompleted!();
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(

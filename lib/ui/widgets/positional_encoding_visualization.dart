@@ -6,6 +6,9 @@ class PositionalEncodingVisualization extends StatefulWidget {
   /// The embedding vectors to visualize
   final List<List<double>> embeddings;
   
+  /// The tokens corresponding to each position
+  final List<String> tokens;
+  
   /// The color theme for the visualization
   final Color themeColor;
   
@@ -16,6 +19,7 @@ class PositionalEncodingVisualization extends StatefulWidget {
     Key? key,
     required this.embeddings,
     required this.themeColor,
+    this.tokens = const [],
     this.maxPositions = 5,
   }) : super(key: key);
 
@@ -93,10 +97,16 @@ class _PositionalEncodingVisualizationState extends State<PositionalEncodingVisu
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: List.generate(numEmbeddings, (pos) {
+                    // Create label with token if available
+                    String label = 'Position $pos';
+                    if (widget.tokens.isNotEmpty && pos < widget.tokens.length) {
+                      label = 'Pos $pos: "${widget.tokens[pos]}"';
+                    }
+                    
                     return Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ChoiceChip(
-                        label: Text('Position $pos'),
+                        label: Text(label),
                         selected: _selectedPosition == pos,
                         onSelected: (selected) {
                           if (selected) {
