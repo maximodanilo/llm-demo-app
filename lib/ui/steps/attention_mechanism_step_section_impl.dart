@@ -319,37 +319,7 @@ class _AttentionMechanismStepSectionImplState extends State<AttentionMechanismSt
           ),
         ),
         
-        // Continue button
-        if (widget.isEditable && !widget.isCompleted)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // Show a success message using ScaffoldMessenger
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Step completed successfully!'),
-                      backgroundColor: Colors.deepOrange,
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                  
-                  // Use a callback to notify the parent screen
-                  if (widget.onStepCompleted != null) {
-                    widget.onStepCompleted!();
-                  }
-                },
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Continue to Next Step'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
-            ),
-          ),
+        // The Continue button is now handled by the parent TrainingFlowScreen
       ],
     );
   }

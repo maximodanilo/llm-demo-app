@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:llmdemoapp/core/models/embedding_layer.dart';
-import 'package:llmdemoapp/core/models/tokenizer.dart';
+import 'package:llmdemoapp/core/services/embedding_service.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
 import 'package:llmdemoapp/ui/widgets/collapsible_education_section.dart';
 import 'package:llmdemoapp/ui/widgets/positional_encoding_visualization.dart';
@@ -41,8 +40,8 @@ class PositionalEncodingStepSectionImpl extends StatefulWidget
 }
 
 class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingStepSectionImpl> {
-  late EmbeddingLayer _embeddingLayer;
-  late ITokenizer _tokenizer;
+  // Use the shared embedding service
+  final EmbeddingService _embeddingService = EmbeddingService();
   late List<List<double>> _embeddings;
   late List<String> _tokens;
   bool _isLoading = true;
@@ -58,24 +57,16 @@ class _PositionalEncodingStepSectionImplState extends State<PositionalEncodingSt
       _isLoading = true;
     });
     
-    // Initialize tokenizer
-    _tokenizer = TokenizerFactory.createTokenizer(TokenizerType.word);
+    // Initialize the embedding service with the same seed used in embedding lookup step
+    _embeddingService.initialize(seed: 42, embeddingDimension: 32);
     
-    // Initialize embedding layer
-    _embeddingLayer = EmbeddingLayer(seed: 42);
-    _embeddingLayer.initializeEmbeddings(10000, 32, strategy: EmbeddingInitStrategy.xavier);
-    
-    // Process the input text to get embeddings
+    // Process the input text to get tokens, token IDs, and embeddings
     if (widget.inputText.isNotEmpty) {
-      final tokens = _tokenizer.encode(widget.inputText);
-      final tokenIds = _tokenizer.tokensToIds(tokens);
+      final result = _embeddingService.processText(widget.inputText);
       
-      // Store tokens for display in the UI (limit to first 5 tokens for clarity)
-      _tokens = tokens.length > 5 ? tokens.sublist(0, 5) : tokens;
-      
-      // Get embeddings for each token (limit to first 5 tokens for clarity)
-      final limitedTokenIds = tokenIds.length > 5 ? tokenIds.sublist(0, 5) : tokenIds;
-      _embeddings = limitedTokenIds.map((id) => _embeddingLayer.getEmbedding(id)).toList();
+      // Extract the results
+      _tokens = result['tokens'];
+      _embeddings = result['embeddings'];
     } else {
       // Default empty embeddings if no input text
       _embeddings = [];

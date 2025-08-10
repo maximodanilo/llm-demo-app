@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:llmdemoapp/core/models/embedding_layer.dart';
-import 'package:llmdemoapp/core/models/tokenizer.dart';
+import 'package:llmdemoapp/core/services/embedding_service.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
 import 'package:llmdemoapp/ui/widgets/collapsible_education_section.dart';
 import 'package:llmdemoapp/ui/widgets/embedding_wave_visualization.dart';
@@ -49,8 +48,8 @@ class EmbeddingLookupStepSectionImpl extends StatefulWidget
 
 class _EmbeddingLookupStepSectionImplState
     extends State<EmbeddingLookupStepSectionImpl> {
-  late final ITokenizer _tokenizer;
-  late final EmbeddingLayer _embeddingLayer;
+  // Use the shared embedding service
+  final EmbeddingService _embeddingService = EmbeddingService();
   late final List<String> _tokens;
   late final List<int> _tokenIds;
   late final List<List<double>> _embeddings;
@@ -59,26 +58,16 @@ class _EmbeddingLookupStepSectionImplState
   void initState() {
     super.initState();
 
-    // Initialize tokenizer
-    _tokenizer = TokenizerFactory.createTokenizer(TokenizerType.word);
-
-    // Tokenize the input text
-    _tokens = _tokenizer.encode(widget.inputText);
-
-    // Convert tokens to IDs
-    _tokenIds = _tokenizer.tokensToIds(_tokens);
-
-    // Initialize embedding layer with vocabulary size and embedding dimension
-    _embeddingLayer = EmbeddingLayer();
-    _embeddingLayer.initializeEmbeddings(
-      _tokenizer.vocabulary.getSize(),
-      widget.embeddingDimension,
-      strategy: EmbeddingInitStrategy.xavier,
-    );
-
-    // Get embeddings for each token
-    _embeddings =
-        _tokenIds.map((id) => _embeddingLayer.getEmbedding(id)).toList();
+    // Initialize the embedding service
+    _embeddingService.initialize(embeddingDimension: widget.embeddingDimension);
+    
+    // Process the input text to get tokens, token IDs, and embeddings
+    final result = _embeddingService.processText(widget.inputText);
+    
+    // Extract the results
+    _tokens = result['tokens'];
+    _tokenIds = result['tokenIds'];
+    _embeddings = result['embeddings'];
   }
 
   @override
@@ -167,12 +156,13 @@ class _EmbeddingLookupStepSectionImplState
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Embedding Dimension: ${widget.embeddingDimension}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    'Embedding Dimension: ${_embeddings.isNotEmpty ? _embeddings[0].length : 0}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 4),
                   Text(
-                    'Vocabulary Size: ${_tokenizer.vocabulary.getSize()}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    'Vocabulary Size: ${_embeddingService.tokenizer.vocabulary.getSize()}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(
                     'Initialization: Xavier/Glorot',
