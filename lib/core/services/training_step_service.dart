@@ -64,6 +64,13 @@ class TrainingStepService extends ChangeNotifier {
       'icon': Icons.visibility,
       'color': Colors.deepOrange,
     },
+    {
+      'id': 6,
+      'title': 'Feed-Forward Network',
+      'description': 'Introduction to the Feed-Forward Network layer',
+      'icon': Icons.account_tree,
+      'color': Colors.indigo,
+    },
   ];
   
   // Track completed steps

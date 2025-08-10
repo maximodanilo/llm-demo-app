@@ -3,6 +3,7 @@ import 'package:llmdemoapp/core/services/training_step_service.dart';
 import 'package:llmdemoapp/ui/steps/attention_mechanism_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/embedding_lookup_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/enter_text_step_section_impl.dart';
+import 'package:llmdemoapp/ui/steps/ffn_intro_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/positional_encoding_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/token_to_id_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/tokenization_step_section_impl.dart';
@@ -502,9 +503,9 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
 
     // Use both a ValueKey for widget identity and the GlobalKey for position finding
     final valueKey = ValueKey('step_content_$stepIndex');
-
+    
     switch (stepIndex) {
-      case 0:
+      case 0: // Enter Text
         return EnterTextStepSectionImpl(
           key: valueKey,
           title: stepInfo['title'],
@@ -513,8 +514,7 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
           isCompleted: isCompleted,
           initialValue: _stepService.getStepInput(0) ?? '',
         );
-      case 1:
-        // Use the original text from the first step
+      case 1: // Tokenization
         return TokenizationStepSectionImpl(
           key: valueKey,
           title: stepInfo['title'],
@@ -523,8 +523,7 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
           isCompleted: isCompleted,
           inputText: originalText ?? '',
         );
-      case 2:
-        // Use the original text from the first step
+      case 2: // Token to ID Mapping
         return TokenToIdStepSectionImpl(
           key: valueKey,
           title: stepInfo['title'],
@@ -533,8 +532,7 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
           isCompleted: isCompleted,
           inputText: originalText ?? '',
         );
-      case 3:
-        // Use the original text from the first step
+      case 3: // Embedding Lookup
         return EmbeddingLookupStepSectionImpl(
           key: valueKey,
           title: stepInfo['title'],
@@ -543,8 +541,7 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
           isCompleted: isCompleted,
           inputText: originalText ?? '',
         );
-      case 4:
-        // Use the original text from the first step
+      case 4: // Positional Encoding
         return PositionalEncodingStepSectionImpl(
           key: valueKey,
           title: stepInfo['title'],
@@ -573,8 +570,7 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
             });
           },
         );
-      case 5:
-        // Use the original text from the first step
+      case 5: // Attention Mechanism
         return AttentionMechanismStepSectionImpl(
           key: valueKey,
           title: stepInfo['title'],
@@ -603,14 +599,43 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
             });
           },
         );
-      default:
-        return EnterTextStepSectionImpl(
+      case 6: // Feed-Forward Network Introduction
+        return FfnIntroStepSectionImpl(
           key: valueKey,
-          title: 'Unknown Step',
-          description: 'This step is not implemented yet.',
-          isEditable: false,
-          isCompleted: false,
-          initialValue: '',
+          title: stepInfo['title'],
+          description: stepInfo['description'],
+          isEditable: !isCompleted && stepIndex == currentStepIndex,
+          isCompleted: isCompleted,
+          inputText: originalText ?? '',
+          onStepCompleted: () {
+            // Complete the step and update the UI
+            _stepService.completeStep(stepIndex);
+
+            setState(() {
+              // Auto-scroll to the next step if not the last step
+              if (stepIndex < _stepService.steps.length - 1) {
+                // Automatically advance to the next step
+                currentStepIndex += 1;
+              }
+
+              // Schedule scrolling after the UI has been updated and rendered
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                // Add a small delay to ensure the UI is fully rendered
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  _scrollToCurrentStep();
+                });
+              });
+            });
+          },
+        );
+      default:
+        return Container(
+          key: valueKey,
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Step ${stepIndex + 1} not implemented yet',
+            style: const TextStyle(fontSize: 18),
+          ),
         );
     }
   }
