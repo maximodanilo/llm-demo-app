@@ -71,6 +71,13 @@ class TrainingStepService extends ChangeNotifier {
       'icon': Icons.account_tree,
       'color': Colors.indigo,
     },
+    {
+      'id': 7,
+      'title': 'Neuron Creation',
+      'description': 'Understand how a single neuron processes inputs and produces outputs',
+      'icon': Icons.science,
+      'color': Colors.pink,
+    },
   ];
   
   // Track completed steps

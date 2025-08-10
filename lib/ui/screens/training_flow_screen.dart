@@ -4,6 +4,7 @@ import 'package:llmdemoapp/ui/steps/attention_mechanism_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/embedding_lookup_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/enter_text_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/ffn_intro_step_section_impl.dart';
+import 'package:llmdemoapp/ui/steps/neuron_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/positional_encoding_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/token_to_id_step_section_impl.dart';
 import 'package:llmdemoapp/ui/steps/tokenization_step_section_impl.dart';
@@ -627,6 +628,14 @@ class _TrainingFlowScreenState extends State<TrainingFlowScreen> {
               });
             });
           },
+        );
+      case 7: // Neuron Creation
+        return NeuronStepSectionImpl(
+          key: valueKey,
+          title: stepInfo['title'],
+          description: stepInfo['description'],
+          isEditable: !isCompleted && stepIndex == currentStepIndex,
+          isCompleted: isCompleted,
         );
       default:
         return Container(
