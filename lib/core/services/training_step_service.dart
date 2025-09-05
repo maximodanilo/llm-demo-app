@@ -66,7 +66,7 @@ class TrainingStepService extends ChangeNotifier {
     },
     {
       'id': 6,
-      'title': 'Feed-Forward Network',
+      'title': 'Create Neuron',
       'description': 'Introduction to the Feed-Forward Network layer',
       'icon': Icons.account_tree,
       'color': Colors.indigo,

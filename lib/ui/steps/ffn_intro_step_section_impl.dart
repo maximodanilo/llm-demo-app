@@ -37,6 +37,7 @@ class FfnIntroStepSectionImpl extends StatefulWidget implements TrainingStepSect
 
 class _FfnIntroStepSectionImplState extends State<FfnIntroStepSectionImpl> {
   bool _isLoading = true;
+  bool _showContinuePrompt = false;
 
   @override
   void initState() {
@@ -156,14 +157,23 @@ class _FfnIntroStepSectionImplState extends State<FfnIntroStepSectionImpl> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Coffee icon
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.brown.shade200,
-                        borderRadius: BorderRadius.circular(8),
+                    // Coffee icon with interactive element
+                    InkWell(
+                      onTap: widget.isEditable && !widget.isCompleted ? () {
+                        // Find the hidden button and trigger its onPressed
+                        setState(() {
+                          _showContinuePrompt = true;
+                        });
+                      } : null,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.brown.shade200,
+                          borderRadius: BorderRadius.circular(8),
+                          border: _showContinuePrompt ? Border.all(color: Colors.indigo, width: 2) : null,
+                        ),
+                        child: const Icon(Icons.coffee, size: 48, color: Colors.brown),
                       ),
-                      child: const Icon(Icons.coffee, size: 48, color: Colors.brown),
                     ),
                     const SizedBox(width: 16),
                     // Analogy explanation
@@ -193,13 +203,51 @@ class _FfnIntroStepSectionImplState extends State<FfnIntroStepSectionImpl> {
 
         const SizedBox(height: 24),
 
-        // Continue button
-        if (widget.isEditable && !widget.isCompleted)
+        // Inner continue button that appears after interaction
+        if (widget.isEditable && !widget.isCompleted && _showContinuePrompt)
           Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 onPressed: () {
+                  // Notify parent that step is complete
+                  final TrainingStepSection section = widget;
+                  if (section.validate()) {
+                    // Show a success message using ScaffoldMessenger
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Step completed successfully!'),
+                        backgroundColor: Colors.indigo,
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                    
+                    // Use a callback to notify the parent screen
+                    if (widget.onStepCompleted != null) {
+                      widget.onStepCompleted!();
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: const Text('Apply Feed-Forward Network'),
+              ),
+            ),
+          ),
+
+        // Hidden completion trigger (backup)
+        if (widget.isEditable && !widget.isCompleted)
+          Opacity(
+            opacity: 0,
+            child: ElevatedButton(
+              onPressed: () {
+                // Notify parent that step is complete
+                final TrainingStepSection section = widget;
+                if (section.validate()) {
                   // Show a success message using ScaffoldMessenger
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -213,15 +261,14 @@ class _FfnIntroStepSectionImplState extends State<FfnIntroStepSectionImpl> {
                   if (widget.onStepCompleted != null) {
                     widget.onStepCompleted!();
                   }
-                },
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Continue to Next Step'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
+              child: const SizedBox.shrink(),
             ),
           ),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:llmdemoapp/core/services/embedding_service.dart';
+import 'package:llmdemoapp/core/services/training_step_service.dart';
 import 'package:llmdemoapp/ui/steps/training_step_section.dart';
 import 'package:llmdemoapp/ui/widgets/collapsible_education_section.dart';
 import 'package:llmdemoapp/ui/widgets/embedding_wave_visualization.dart';
@@ -54,6 +55,9 @@ class _EmbeddingLookupStepSectionImplState
   late final List<int> _tokenIds;
   late final List<List<double>> _embeddings;
 
+  // Training step service to save embeddings for next steps
+  final TrainingStepService _stepService = TrainingStepService();
+  
   @override
   void initState() {
     super.initState();
@@ -68,6 +72,25 @@ class _EmbeddingLookupStepSectionImplState
     _tokens = result['tokens'];
     _tokenIds = result['tokenIds'];
     _embeddings = result['embeddings'];
+    
+    // Save embeddings for next steps to use
+    _saveEmbeddingsForNextSteps();
+  }
+  
+  /// Save embeddings in a format that can be used by subsequent steps
+  void _saveEmbeddingsForNextSteps() {
+    if (_tokens.isEmpty || _embeddings.isEmpty) return;
+    
+    // Format: tokens|embeddings
+    // Where tokens is comma-separated and embeddings is semicolon-separated list of comma-separated values
+    final tokensStr = _tokens.join(',');
+    final embeddingsStr = _embeddings.map((e) => e.join(',')).join(';');
+    
+    // Save to step service for step 4 (this step)
+    _stepService.setStepInput(3, '$tokensStr|$embeddingsStr');
+    
+    debugPrint('DEBUG: Saved ${_tokens.length} tokens and ${_embeddings.length} embeddings for next steps');
+    debugPrint('DEBUG: First token: ${_tokens.isNotEmpty ? _tokens[0] : "none"}, First embedding: ${_embeddings.isNotEmpty ? _embeddings[0].take(3).join(",") + "..." : "none"}');
   }
 
   @override
